@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>契約管理システム</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tabler-icons/3.19.0/iconfont/tabler-icons.min.css">
+<style>
+:root{
+  --font-sans: 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', 'Noto Sans JP', sans-serif;
+  --color-background-primary: #ffffff;
+  --color-background-secondary: #f5f5f5;
+  --color-background-danger: #fee2e2;
+  --color-background-warning: #fef9c3;
+  --color-background-success: #dcfce7;
+  --color-background-info: #dbeafe;
+  --color-text-primary: #111827;
+  --color-text-secondary: #6b7280;
+  --color-text-danger: #dc2626;
+  --color-text-warning: #ca8a04;
+  --color-text-success: #16a34a;
+  --color-text-info: #2563eb;
+  --color-border-tertiary: #e5e7eb;
+  --color-border-secondary: #d1d5db;
+  --border-radius-md: 6px;
+  --border-radius-lg: 10px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font-sans);background:#f9fafb;color:var(--color-text-primary);padding:1rem}
+.app{max-width:1200px;margin:0 auto;padding:1rem 0}
+h1{font-size:18px;font-weight:600;margin-bottom:1.25rem;color:var(--color-text-primary)}
+.tabs{display:flex;gap:4px;margin-bottom:1.5rem;border-bottom:0.5px solid var(--color-border-tertiary);flex-wrap:wrap}
+.tab{padding:7px 14px;font-size:13px;cursor:pointer;border:none;background:none;color:var(--color-text-secondary);border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap}
+.tab.active{color:var(--color-text-primary);border-bottom-color:var(--color-text-primary);font-weight:500}
+.section{display:none}.section.active{display:block}
+.metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px;margin-bottom:1.25rem}
+.metric{background:var(--color-background-secondary);border-radius:var(--border-radius-md);padding:.85rem;text-align:center}
+.metric-label{font-size:11px;color:var(--color-text-secondary);margin-bottom:5px}
+.metric-value{font-size:20px;font-weight:500}
+.metric-value.danger{color:var(--color-text-danger)}
+.metric-value.warning{color:var(--color-text-warning)}
+.metric-value.success{color:var(--color-text-success)}
+.card{background:var(--color-background-primary);border:0.5px solid var(--color-border-tertiary);border-radius:var(--border-radius-lg);padding:1rem 1.25rem;margin-bottom:1rem}
+.card-title{font-size:14px;font-weight:500;margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.alert-item{display:flex;align-items:flex-start;gap:8px;padding:7px 0;border-bottom:0.5px solid var(--color-border-tertiary)}
+.alert-item:last-child{border-bottom:none}
+.badge{font-size:11px;padding:2px 7px;border-radius:var(--border-radius-md);white-space:nowrap;font-weight:500}
+.badge-danger{background:var(--color-background-danger);color:var(--color-text-danger)}
+.badge-warning{background:var(--color-background-warning);color:var(--color-text-warning)}
+.badge-success{background:var(--color-background-success);color:var(--color-text-success)}
+.badge-info{background:var(--color-background-info);color:var(--color-text-info)}
+.badge-gray{background:var(--color-background-secondary);color:var(--color-text-secondary)}
+.controls{display:flex;gap:6px;margin-bottom:.85rem;flex-wrap:wrap;align-items:center}
+.controls input,.controls select{font-size:12px;padding:5px 8px;height:30px;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md);background:#fff}
+.controls input{flex:1;min-width:100px}
+.btn{font-size:12px;padding:5px 10px;cursor:pointer;height:30px;display:inline-flex;align-items:center;gap:5px;white-space:nowrap;border-radius:var(--border-radius-md);border:none}
+.btn-primary{background:var(--color-text-primary);color:#fff}
+.btn-outline{background:none;border:0.5px solid var(--color-border-secondary);color:var(--color-text-primary)}
+.btn-outline:hover{background:var(--color-background-secondary)}
+.tbl{width:100%;border-collapse:collapse;font-size:12px;table-layout:fixed}
+.tbl th{text-align:left;padding:7px 6px;color:var(--color-text-secondary);font-weight:500;border-bottom:0.5px solid var(--color-border-tertiary);font-size:11px}
+.tbl td{padding:7px 6px;border-bottom:0.5px solid var(--color-border-tertiary);vertical-align:middle;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tbl tr:last-child td{border-bottom:none}
+.tbl tr:hover td{background:var(--color-background-secondary);cursor:pointer}
+.days-left{font-size:11px;color:var(--color-text-secondary)}
+.action-btn{background:none;border:none;cursor:pointer;color:var(--color-text-secondary);font-size:15px;padding:2px 3px}
+.action-btn:hover{color:var(--color-text-primary)}
+.modal-bg{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.45);z-index:100;align-items:center;justify-content:center}
+.modal-bg.open{display:flex}
+.modal{background:#fff;border-radius:var(--border-radius-lg);padding:1.25rem;width:94%;max-width:580px;border:0.5px solid var(--color-border-tertiary);max-height:88vh;overflow-y:auto}
+.modal h3{font-size:15px;font-weight:500;margin-bottom:1rem}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.form-group{display:flex;flex-direction:column;gap:3px}
+.form-group.full{grid-column:1/-1}
+.form-group label{font-size:11px;color:var(--color-text-secondary)}
+.form-group input,.form-group select,.form-group textarea{font-size:12px;padding:5px 8px;border:0.5px solid var(--color-border-secondary);border-radius:var(--border-radius-md)}
+.modal-btns{display:flex;justify-content:flex-end;gap:8px;margin-top:1rem}
+.btn-cancel{background:none;border:none;color:var(--color-text-secondary);cursor:pointer;font-size:12px;padding:5px 10px}
+.detail-modal{max-width:640px}
+.detail-row{display:flex;padding:6px 0;border-bottom:0.5px solid var(--color-border-tertiary);font-size:13px}
+.detail-row:last-child{border-bottom:none}
+.detail-label{width:130px;min-width:130px;color:var(--color-text-secondary);font-size:12px}
+.detail-value{flex:1;word-break:break-all}
+.sheet-tabs{display:flex;gap:4px;flex-wrap:wrap;margin-bottom:.75rem}
+.sheet-tab{font-size:11px;padding:3px 9px;border-radius:var(--border-radius-md);border:0.5px solid var(--color-border-tertiary);cursor:pointer;background:none;color:var(--color-text-secondary)}
+.sheet-tab.active{background:var(--color-text-primary);color:#fff;border-color:var(--color-text-primary)}
+.pagination{display:flex;align-items:center;gap:8px;margin-top:.75rem;font-size:12px;color:var(--color-text-secondary);justify-content:flex-end}
+</style>
+</head>
+<body>
+<div class="app">
+<h1><i class="ti ti-file-text"></i> 契約管理システム</h1>
+<div class="tabs">
+  <button class="tab active" onclick="switchTab('dashboard')"><i class="ti ti-layout-dashboard"></i> ダッシュボード</button>
+  <button class="tab" onclick="switchTab('contracts')"><i class="ti ti-file-text"></i> 契約一覧</button>
+</div>
+
+<div id="dashboard" class="section active">
+  <div class="metrics" id="metrics"></div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem">
+    <div class="card" style="margin:0">
+      <div class="card-title"><i class="ti ti-bell" style="color:#dc2626"></i> 期限アラート（90日以内）</div>
+      <div id="alerts"></div>
+    </div>
+    <div class="card" style="margin:0">
+      <div class="card-title"><i class="ti ti-refresh" style="color:#2563eb"></i> 継続中 契約（期限なし）</div>
+      <div id="active-list"></div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title"><i class="ti ti-chart-bar"></i> シート別 件数</div>
+    <div id="sheet-stats" style="display:flex;flex-wrap:wrap;gap:8px"></div>
+  </div>
+</div>
+
+<div id="contracts" class="section">
+  <div class="sheet-tabs" id="sheet-tabs"></div>
+  <div class="controls">
+    <input type="text" id="search" placeholder="会社名・契約書名・担当者・契約番号で検索..." oninput="renderTable()">
+    <select id="filter-status" onchange="renderTable()">
+      <option value="">すべてのステータス</option>
+      <option>継続中</option><option>終了</option><option>要確認</option><option>期限切れ</option>
+    </select>
+    <button class="btn btn-primary" onclick="openAddModal()"><i class="ti ti-plus"></i> 追加</button>
+  </div>
+  <div style="font-size:12px;color:#6b7280;margin-bottom:6px" id="result-count"></div>
+  <div class="card" style="padding:0;overflow-x:auto">
+    <table class="tbl">
+      <colgroup>
+        <col style="width:7%"><col style="width:16%"><col style="width:18%"><col style="width:12%">
+        <col style="width:11%"><col style="width:10%"><col style="width:9%"><col style="width:5%">
+      </colgroup>
+      <thead><tr>
+        <th>番号</th><th>会社名</th><th>契約書名</th><th>担当者</th>
+        <th>満了日</th><th>シート</th><th>ステータス</th><th></th>
+      </tr></thead>
+      <tbody id="table-body"></tbody>
+    </table>
+  </div>
+  <div class="pagination" id="pagination"></div>
+</div>
+</div>
+
+<!-- Detail Modal -->
+<div class="modal-bg" id="detail-modal">
+  <div class="modal detail-modal">
+    <h3 id="detail-title"></h3>
+    <div id="detail-body"></div>
+    <div class="modal-btns">
+      <button class="btn-cancel" onclick="closeDetail()">閉じる</button>
+      <button class="btn btn-primary" onclick="editFromDetail()"><i class="ti ti-edit"></i> 編集</button>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Modal -->
+<div class="modal-bg" id="edit-modal">
+  <div class="modal">
+    <h3 id="edit-modal-title">契約を編集</h3>
+    <div class="form-grid">
+      <div class="form-group full"><label>会社名（契約締結先）</label><input id="e-company" type="text"></div>
+      <div class="form-group full"><label>契約書名</label><input id="e-docname" type="text"></div>
+      <div class="form-group"><label>契約番号</label><input id="e-num" type="text"></div>
+      <div class="form-group"><label>担当者</label><input id="e-pic" type="text"></div>
+      <div class="form-group"><label>契約締結日</label><input id="e-signed" type="date"></div>
+      <div class="form-group"><label>契約開始日</label><input id="e-start" type="date"></div>
+      <div class="form-group"><label>契約満了日</label><input id="e-end" type="date"></div>
+      <div class="form-group"><label>自動更新確認時期</label><input id="e-autocheck" type="text"></div>
+      <div class="form-group"><label>契約更新期日</label><input id="e-renewdate" type="date"></div>
+      <div class="form-group"><label>ステータス</label>
+        <select id="e-status"><option value="">自動</option><option>継続中</option><option>終了</option><option>交渉中</option><option>保留</option></select>
+      </div>
+      <div class="form-group"><label>クラウドサイン</label><input id="e-cloudsign" type="text"></div>
+      <div class="form-group"><label>更新回数</label><input id="e-renewcount" type="number"></div>
+      <div class="form-group full"><label>備考</label><textarea id="e-memo" rows="2" style="resize:vertical"></textarea></div>
+    </div>
+    <div class="modal-btns">
+      <button class="btn-cancel" onclick="closeEdit()">キャンセル</button>
+      <button class="btn btn-primary" onclick="saveEdit()"><i class="ti ti-check"></i> 保存</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============================================================
+// データ（スプレッドシートから取り込み済み）
+// ============================================================
+const RAW_DATA = [
+  {sheet:'一般(CO)',num:'C-001',company:'株式会社ザイマックス',docname:'ZXY利用契約書',pic:'倉内薫',signed:'2019-04-12',start:'2019-04-15',end:'',autocheck:'1ヶ月前',renewdate:'',status:'継続中',cloudsign:'-',renewcount:'0',memo:'サテライトオフィスZXYの利用契約'},
+  {sheet:'一般(CO)',num:'C-029',company:'三菱地所リアルエステートサービス株式会社',docname:'顧客紹介に関する協定書',pic:'',signed:'2024-06-18',start:'2024-06-18',end:'2026-06-17',autocheck:'',renewdate:'',status:'継続中',cloudsign:'',renewcount:'',memo:''},
+  {sheet:'一般(CO)',num:'C-044',company:'Dr.ZeAL株式会社',docname:'顧客紹介契約書',pic:'池田',signed:'2025-08-04',start:'2025-08-04',end:'2026-08-03',autocheck:'1',renewdate:'2026-07-03',status:'継続中',cloudsign:'',renewcount:'',memo:''},
+  {sheet:'一般(CO)',num:'C-045',company:'株式会社ヨドック',docname:'顧客紹介契約書',pic:'池田',signed:'2025-08-04',start:'2025-08-04',end:'2026-08-03',autocheck:'1',renewdate:'2026-07-03',status:'継続中',cloudsign:'',renewcount:'',memo:''},
+  {sheet:'一般(CO)',num:'C-046',company:'GVA TECH株式会社',docname:'顧客紹介契約書',pic:'池田',signed:'2025-08-04',start:'2025-08-04',end:'2026-08-03',autocheck:'1',renewdate:'2026-07-03',status:'継続中',cloudsign:'',renewcount:'',memo:''},
+  {sheet:'一般(CO)',num:'C-0067',company:'アイデックス株式会社',docname:'顧客紹介契約書',pic:'池田',signed:'2025-08-27',start:'2025-08-27',end:'2026-08-26',autocheck:'1',renewdate:'2026-07-26',status:'継続中',cloudsign:'',renewcount:'',memo:''},
+  {sheet:'一般(CO)',num:'C-0069',company:'株式会社ネオキャリア',docname:'顧客紹介契約書',pic:'池田',signed:'2026-01-23',start:'2026-01-23',end:'2027-01-22',autocheck:'1',renewdate:'2026-12-22',status:'継続中',cloudsign:'',renewcount:'',memo:''},
+  {sheet:'一般(CO)',num:'C-0070',company:'株式会社エスキャリア',docname:'顧客紹介契約書',pic:'池田',signed:'2026-01-23',start:'2026-01-23',end:'2027-01-22',autocheck:'1',renewdate:'2026-12-22',status:'継続中',cloudsign:'',renewcount:'',memo:''},
+  {sheet:'一般(CO)',num:'C-0072',company:'NTT都市開発株式会社',docname:'業務委託契約の締結',pic:'伊藤',signed:'2026-05-08',start:'2026-05-08',end:'2026-06-12',autocheck:'',renewdate:'',status:'継続中',cloudsign:'',renewcount:'',memo:''},
+  {sheet:'一般(HD)',num:'H-002',company:'みらい総合法律事務所',docname:'法律顧問契約の変更合意書',pic:'傍島啓記',signed:'2017-02-02',start:'2017-02-02',end:'',autocheck:'',renewdate:'',status:'継続中',cloudsign:'-',renewcount:'0',memo:'CO→HDへの契約主体変更'},
+  {sheet:'一般(HD)',num:'H-007',company:'みずほ証券株式会社',docname:'株式上場に関する情報提供・助言業務に係る契約書',pic:'仙石宗之',signed:'2016-11-01',start:'2016-11-01',end:'',autocheck:'',renewdate:'',status:'継続中',cloudsign:'-',renewcount:'0',memo:'IPO主幹事（30万/月）'},
+  {sheet:'一般(HD)',num:'H-008',company:'みずほ信託銀行株式会社',docname:'株主名簿等関係事務代行委託契約書',pic:'仙石宗之',signed:'2016-12-30',start:'2022-01-01',end:'',autocheck:'',renewdate:'',status:'継続中',cloudsign:'-',renewcount:'0',memo:'株主名簿管理'},
+  {sheet:'一般(HD)',num:'H-022',company:'CrossOver法律事務所',docname:'委任契約書',pic:'松島卓郎',signed:'2021-01-18',start:'2021-01-18',end:'',autocheck:'',renewdate:'',status:'継続中',cloudsign:'-',renewcount:'0',memo:'上場法務DD'},
+  {sheet:'一般(HD)',num:'H-024',company:'渡部峻輔',docname:'責任限定契約書',pic:'松島卓郎',signed:'2021-04-01',start:'2021-04-01',end:'',autocheck:'',renewdate:'',status:'継続中',cloudsign:'〇',renewcount:'0',memo:''},
+  {sheet:'一般(HD)',num:'H-025',company:'長井利仁',docname:'責任限定契約書',pic:'松島卓郎',signed:'2021-04-01',start:'2021-04-01',end:'',autocheck:'',renewdate:'',status:'継続中',cloudsign:'〇',renewcount:'0',memo:''},
+  {sheet:'一般(HD)',num:'H-041',company:'三上薫',docname:'責任限定契約書',pic:'松島卓郎',signed:'2022-08-01',start:'2022-08-01',end:'',autocheck:'',renewdate:'',status:'継続中',cloudsign:'〇',renewcount:'0',memo:''},
+  {sheet:'一般(HD)',num:'H-058',company:'株式会社Insight science',docname:'利用申込書',pic:'',signed:'2024-02-02',start:'2024-02-05',end:'2026-08-04',autocheck:'1',renewdate:'2026-07-04',status:'継続中',cloudsign:'',renewcount:'',memo:''},
+  {sheet:'一般(HD)',num:'H-071',company:'株式会社ビズリーチ',docname:'HRMOS採用包括利用申込書',pic:'',signed:'2024-06-25',start:'2024-08-01',end:'2026-01-31',autocheck:'',renewdate:'',status:'継続中',cloudsign:'',renewcount:'',memo:''},
+  {sheet:'一般(HD)',num:'H-077',company:'楽天モバイル株式会社',docname:'楽天モバイル法人回線契約申込書',pic:'',signed:'2023-11-01',start:'2023-11-01',end:'2026-11-30',autocheck:'',renewdate:'',status:'継続中',cloudsign:'',renewcount:'',memo:''},
+  {sheet:'一般(HD)',num:'H-079',company:'株式会社ピグレス',docname:'業務委託契約書',pic:'末武花観',signed:'2025-02-01',start:'2025-02-01',end:'2026-01-31',autocheck:'1ヶ月前',renewdate:'2025-12-31',status:'継続中',cloudsign:'◯',renewcount:'',memo:''},
+  {sheet:'一般(HD)',num:'H-084',company:'株式会社八洋',docname:'自動販売機設置契約書',pic:'倉内薫',signed:'2024-11-26',start:'2024-11-26',end:'2027-11-26',autocheck:'1ヶ月前',renewdate:'2027-10-26',status:'継続中',cloudsign:'',renewcount:'',memo:''},
+  {sheet:'一般(HD)',num:'H-091',company:'長島・大野・常松法律事務所',docname:'法律顧問契約書',pic:'',signed:'2025-01-08',start:'',end:'',autocheck:'',renewdate:'',status:'継続中',cloudsign:'',renewcount:'',memo:'担当弁護士がパートナーに昇格したため変更'},
+  {sheet:'一般(HD)',num:'H-092',company:'株式会社フロンティアエンゲージメント',docname:'申込書（chasy.）',pic:'鈴木茜',signed:'2025-05-20',start:'2025-05-20',end:'2026-05-20',autocheck:'なし',renewdate:'',status:'継続中',cloudsign:'',renewcount:'',memo:'chasy.（チェイシー）'},
+  {sheet:'一般(HD)',num:'H-104',company:'株式会社DMM.comホールディングス',docname:'顧客送客に関する契約書',pic:'松島',signed:'2025-07-11',start:'2025-07-11',end:'2026-07-10',autocheck:'1',renewdate:'2026-06-10',status:'継続中',cloudsign:'',renewcount:'',memo:''},
+  {sheet:'一般(HD)',num:'H-106',company:'ROXX株式会社',docname:'人材紹介に関する契約書',pic:'長谷川',signed:'2025-07-30',start:'2025-07-30',end:'2026-07-29',autocheck:'1',renewdate:'2026-06-29',status:'継続中',cloudsign:'',renewcount:'',memo:''},
+  {sheet:'一般(HD)',num:'H-111',company:'株式会社Scalehack',docname:'業務委託基本契約書（準委任）',pic:'池田',signed:'2025-09-12',start:'2025-09-12',end:'2026-08-31',autocheck:'1',renewdate:'2026-07-31',status:'継続中',cloudsign:'',renewcount:'',memo:''},
+  {sheet:'一般(HD)',num:'H-112',company:'株式会社プラザホールディングス',docname:'業務提携契約書',pic:'堀田',signed:'2025-10-01',start:'2025-10-01',end:'2028-09-30',autocheck:'1',renewdate:'2028-08-30',status:'継続中',cloudsign:'',renewcount:'',memo:''},
+  {sheet:'一般(HD)',num:'H-113',company:'株式会社ノース・ヒル',docname:'個人情報取扱いに関する契約書',pic:'澤木',signed:'2025-09-26',start:'2025-09-26',end:'2026-09-25',autocheck:'1',renewdate:'2026-08-25',status:'継続中',cloudsign:'',renewcount:'',memo:''},
+  {sheet:'一般(HD)',num:'H-115',company:'株式会社サカイ引越センター',docname:'顧客紹介契約書',pic:'',signed:'2025-10-09',start:'2025-10-09',end:'2026-10-08',autocheck:'1',renewdate:'2026-09-08',status:'継続中',cloudsign:'',renewcount:'',memo:''},
+  {sheet:'一般(HD)',num:'H-116',company:'株式会社プラザクリエイト',docname:'個室ブース覚書',pic:'堀田',signed:'2025-10-01',start:'2025-10-01',end:'',autocheck:'',renewdate:'',status:'継続中',cloudsign:'',renewcount:'',memo:'無期'},
+  {sheet:'一般(HD)',num:'H-120',company:'社会保険労務士法人三平事務所',docname:'業務委託契約書',pic:'熊野',signed:'',start:'2025-11-01',end:'2026-10-31',autocheck:'3',renewdate:'2026-07-31',status:'継続中',cloudsign:'',renewcount:'',memo:''},
+  {sheet:'一般(HD)',num:'H-123',company:'株式会社Lightblue',docname:'Lightblueサービス利用申込書',pic:'池田',signed:'2026-01-06',start:'2026-01-01',end:'2026-11-30',autocheck:'',renewdate:'',status:'継続中',cloudsign:'',renewcount:'',memo:''},
+  {sheet:'一般(HD)',num:'H-125',company:'太陽有限責任監査法人',docname:'監査契約書',pic:'堀田',signed:'2026-01-07',start:'2025-10-01',end:'2026-09-30',autocheck:'',renewdate:'',status:'継続中',cloudsign:'',renewcount:'',memo:''},
+  {sheet:'一般(HD)',num:'H-126',company:'コカ・コーラボトラーズジャパン株式会社',docname:'自動販売機設置契約書',pic:'倉内',signed:'2026-01-21',start:'2026-01-23',end:'2029-01-22',autocheck:'1',renewdate:'2028-12-22',status:'継続中',cloudsign:'',renewcount:'',memo:''},
+  {sheet:'一般(HD)',num:'H-129',company:'株式会社アジャスト',docname:'業務委託基本契約書',pic:'石田',signed:'2026-05-01',start:'2026-05-01',end:'2027-04-30',autocheck:'1',renewdate:'2027-03-30',status:'継続中',cloudsign:'',renewcount:'',memo:''},
+  {sheet:'一般(INC)',num:'I-016',company:'株式会社ペイジェント',docname:'ペイジェント決済代行サービス申込書',pic:'梁原立寛',signed:'2022-01-31',start:'2022-01-31',end:'',autocheck:'',renewdate:'',status:'継続中',cloudsign:'-',renewcount:'',memo:'3Dセキュア2.0'},
+  {sheet:'一般(INC)',num:'I-K-008',company:'株式会社岡村製作所',docname:'売買取引基本契約書',pic:'池田新',signed:'2016-07-01',start:'2016-07-01',end:'',autocheck:'n/a',renewdate:'',status:'継続中',cloudsign:'',renewcount:'0',memo:''},
+  {sheet:'一般(INC)',num:'I-K-016',company:'株式会社ポピー',docname:'取引基本契約書',pic:'三谷凛',signed:'2023-10-24',start:'2023-10-24',end:'',autocheck:'1ヶ月前',renewdate:'',status:'継続中',cloudsign:'◯',renewcount:'',memo:''},
+  {sheet:'一般(INC)',num:'I-K-018',company:'株式会社ライオン事務器',docname:'覚書',pic:'池田新',signed:'',start:'',end:'',autocheck:'n/a',renewdate:'',status:'継続中',cloudsign:'',renewcount:'',memo:''},
+  {sheet:'一般(INC)',num:'I-K-020',company:'株式会社遠藤照明',docname:'商品売買基本契約書',pic:'池田新',signed:'',start:'',end:'',autocheck:'n/a',renewdate:'',status:'継続中',cloudsign:'',renewcount:'',memo:''},
+  {sheet:'一般(INC)',num:'I-064',company:'メディエア株式会社',docname:'取引基本契約書',pic:'',signed:'2025-01-30',start:'2025-01-30',end:'2026-01-29',autocheck:'1',renewdate:'2025-12-29',status:'継続中',cloudsign:'',renewcount:'',memo:''},
+  {sheet:'一般(INC)',num:'I-066',company:'アトモフ株式会社',docname:'取引基本契約書',pic:'',signed:'2025-04-14',start:'2025-04-14',end:'2026-04-13',autocheck:'1',renewdate:'2026-03-13',status:'継続中',cloudsign:'',renewcount:'',memo:''},
+  {sheet:'一般(INC)',num:'I-069',company:'株式会社Swish',docname:'サービス利用契約書',pic:'倉内',signed:'2025-07-25',start:'2025-08-18',end:'2026-08-17',autocheck:'1',renewdate:'2026-07-17',status:'継続中',cloudsign:'',renewcount:'',memo:''},
+  {sheet:'一般(INC)',num:'I-070',company:'株式会社イグアス',docname:'IGUAZUビジネスパートナー契約書',pic:'伊藤',signed:'2025-09-04',start:'2025-09-04',end:'2026-09-03',autocheck:'3',renewdate:'2026-06-03',status:'継続中',cloudsign:'',renewcount:'',memo:''},
+  {sheet:'一般(INC)',num:'I-072',company:'桜屋工業株式会社',docname:'取引基本契約書',pic:'三谷',signed:'2025-10-14',start:'2025-10-14',end:'2026-10-13',autocheck:'1',renewdate:'2026-09-13',status:'継続中',cloudsign:'',renewcount:'',memo:''},
+  {sheet:'一般(INC)',num:'I-078',company:'47株式会社',docname:'テナント総合保険申込書',pic:'倉内',signed:'2025-12-24',start:'2026-01-01',end:'2027-12-31',autocheck:'',renewdate:'',status:'継続中',cloudsign:'',renewcount:'',memo:''},
+  {sheet:'一般(INC)',num:'I-083',company:'金剛株式会社',docname:'取引基本契約書',pic:'三谷',signed:'2026-02-12',start:'2026-02-12',end:'2027-02-11',autocheck:'1',renewdate:'2027-01-11',status:'継続中',cloudsign:'',renewcount:'',memo:''},
+  {sheet:'一般(INC)',num:'I-084',company:'株式会社芝エレベーター',docname:'保守契約書',pic:'増田',signed:'2026-03-06',start:'2026-03-01',end:'2027-02-28',autocheck:'1',renewdate:'2027-01-28',status:'継続中',cloudsign:'',renewcount:'',memo:''},
+  {sheet:'一般(INC)',num:'I-087',company:'株式会社KOBUY',docname:'収納代行に関する契約書',pic:'西脇',signed:'2026-04-03',start:'2026-04-03',end:'2027-04-02',autocheck:'3',renewdate:'2027-01-02',status:'継続中',cloudsign:'',renewcount:'',memo:''},
+  {sheet:'一般(INC)',num:'I-088',company:'日輸工業株式会社',docname:'レンタル契約書',pic:'増田',signed:'2026-05-01',start:'2026-05-01',end:'2026-10-31',autocheck:'',renewdate:'',status:'継続中',cloudsign:'',renewcount:'',memo:'花畑 フォークリフトレンタル'},
+  {sheet:'一般(NAI)',num:'N-033',company:'平和不動産株式会社',docname:'取引基本契約書',pic:'大森',signed:'2025-05-30',start:'2025-05-30',end:'2027-05-29',autocheck:'3',renewdate:'2027-02-28',status:'継続中',cloudsign:'',renewcount:'',memo:''},
+  {sheet:'一般(NAI)',num:'N-035',company:'株式会社フジコー',docname:'商品売買基本契約書',pic:'荒瀬',signed:'2025-07-09',start:'2025-07-01',end:'2026-06-30',autocheck:'1',renewdate:'2026-05-30',status:'継続中',cloudsign:'',renewcount:'',memo:''},
+  {sheet:'一般(NAI)',num:'N-036',company:'天音デザイン',docname:'業務委託契約書',pic:'梅林',signed:'2025-07-07',start:'2025-07-07',end:'2026-07-06',autocheck:'1ヶ月前',renewdate:'2026-06-06',status:'継続中',cloudsign:'',renewcount:'',memo:''},
+  {sheet:'一般(NAI)',num:'N-037',company:'株式会社 solum design',docname:'業務委託契約書',pic:'梅林',signed:'2025-07-30',start:'2025-07-30',end:'2026-07-29',autocheck:'1',renewdate:'2026-06-29',status:'継続中',cloudsign:'',renewcount:'',memo:''},
+  {sheet:'一般(NAI)',num:'N-038',company:'株式会社AIK',docname:'顧客紹介契約書',pic:'',signed:'2025-07-20',start:'2025-07-20',end:'2026-07-19',autocheck:'1',renewdate:'2026-06-19',status:'継続中',cloudsign:'',renewcount:'',memo:''},
+  {sheet:'一般(NAI)',num:'N-039',company:'有限会社ディーアール',docname:'業務委託契約書',pic:'大森',signed:'2025-08-21',start:'2025-08-21',end:'2026-08-20',autocheck:'1',renewdate:'2026-07-20',status:'継続中',cloudsign:'',renewcount:'',memo:''},
+  {sheet:'一般(NAI)',num:'N-040',company:'株式会社日本パープル',docname:'顧客紹介契約書',pic:'池田',signed:'2025-09-05',start:'2025-09-05',end:'2026-09-04',autocheck:'1',renewdate:'2026-08-04',status:'継続中',cloudsign:'',renewcount:'',memo:''},
+  {sheet:'一般(NAI)',num:'N-042',company:'滝宮侑子',docname:'業務委託契約書',pic:'大森',signed:'2025-10-06',start:'2025-10-06',end:'2026-10-05',autocheck:'1',renewdate:'2026-09-05',status:'継続中',cloudsign:'',renewcount:'',memo:''},
+  {sheet:'一般(NAI)',num:'N-045',company:'日本通運株式会社東京支店',docname:'移転等業務提携契約書',pic:'堀田',signed:'2025-10-21',start:'2025-11-01',end:'2026-10-30',autocheck:'3',renewdate:'2026-07-30',status:'継続中',cloudsign:'',renewcount:'',memo:''},
+  {sheet:'一般(NAI)',num:'N-121',company:'社会保険労務士法人三平事務所',docname:'業務委託契約書',pic:'熊野',signed:'',start:'2025-11-01',end:'2026-10-31',autocheck:'3',renewdate:'2026-07-31',status:'継続中',cloudsign:'',renewcount:'',memo:''},
+  {sheet:'一般(NAI)',num:'N-124',company:'株式会社業態開発研究所',docname:'業務委託契約書',pic:'大森',signed:'2026-01-09',start:'2026-01-09',end:'2027-01-08',autocheck:'1',renewdate:'2026-12-08',status:'継続中',cloudsign:'',renewcount:'',memo:''},
+  {sheet:'一般(NAI)',num:'N-126',company:'波多野翔一',docname:'業務契約書',pic:'梅林',signed:'2026-02-20',start:'2026-02-20',end:'2027-02-19',autocheck:'1',renewdate:'2027-01-19',status:'継続中',cloudsign:'',renewcount:'',memo:''},
+  {sheet:'一般(NAI)',num:'N-131',company:'株式会社大塚商会',docname:'契約書',pic:'倉内',signed:'2026-05-28',start:'2026-07-01',end:'2027-06-30',autocheck:'',renewdate:'',status:'継続中',cloudsign:'',renewcount:'',memo:''},
+  {sheet:'採用関連',num:'R-018',company:'株式会社マイナビ',docname:'マイナビ新卒紹介に関する覚書',pic:'',signed:'2021-06-01',start:'2021-06-01',end:'',autocheck:'',renewdate:'',status:'継続中',cloudsign:'-',renewcount:'0',memo:'関連会社への紹介'},
+  {sheet:'採用関連',num:'R-020',company:'株式会社マイナビワークス',docname:'人材紹介（マイナビジョブ20s）に関する契約書',pic:'',signed:'2022-09-08',start:'2022-09-08',end:'',autocheck:'',renewdate:'',status:'継続中',cloudsign:'-',renewcount:'0',memo:''},
+  {sheet:'採用関連',num:'R-091',company:'パーソルテンプスタッフ株式会社',docname:'労働者派遣取引契約',pic:'',signed:'2025-10-20',start:'2025-10-30',end:'2026-10-29',autocheck:'',renewdate:'',status:'継続中',cloudsign:'',renewcount:'',memo:''},
+  {sheet:'採用関連',num:'R-092',company:'株式会社トキハナ',docname:'人材紹介契約書',pic:'',signed:'2025-10-31',start:'2025-10-31',end:'2026-10-30',autocheck:'1',renewdate:'2026-09-30',status:'継続中',cloudsign:'',renewcount:'',memo:''},
+  {sheet:'採用関連',num:'R-093',company:'シンクエージェント株式会社',docname:'27年卒新卒人材紹介サービス利用申込書',pic:'',signed:'',start:'',end:'2027-03-31',autocheck:'',renewdate:'',status:'継続中',cloudsign:'',renewcount:'',memo:''},
+  {sheet:'採用関連',num:'R-094',company:'株式会社アンドパッド',docname:'人材紹介サービス申込書',pic:'',signed:'2025-11-18',start:'2025-11-18',end:'2026-11-17',autocheck:'1',renewdate:'2026-10-17',status:'継続中',cloudsign:'',renewcount:'',memo:''},
+  {sheet:'採用関連',num:'R-095',company:'株式会社BeyondCafe',docname:'BeyondCafe申込書',pic:'',signed:'2026-03-27',start:'2026-03-11',end:'2027-03-10',autocheck:'',renewdate:'',status:'継続中',cloudsign:'',renewcount:'',memo:''},
+  {sheet:'NDA',num:'H-N-006',company:'株式会社アートマン',docname:'秘密保持契約書',pic:'中村貴彦',signed:'2023-08-09',start:'2023-08-09',end:'',autocheck:'',renewdate:'',status:'継続中',cloudsign:'◯',renewcount:'',memo:'Kagg.jpシステム開発'},
+  {sheet:'NDA',num:'H-N-030',company:'株式会社YTGATE',docname:'秘密保持契約書',pic:'前田拓',signed:'2024-12-21',start:'2024-12-21',end:'2026-12-20',autocheck:'',renewdate:'',status:'継続中',cloudsign:'◯',renewcount:'',memo:''},
+  {sheet:'NDA',num:'H-N-035',company:'株式会社Hi-story',docname:'秘密保持契約書',pic:'松島卓郎',signed:'2025-01-22',start:'2025-01-22',end:'2027-01-21',autocheck:'',renewdate:'',status:'継続中',cloudsign:'',renewcount:'',memo:''},
+  {sheet:'NDA',num:'H-N-038',company:'山梨中銀経営コンサルティング株式会社',docname:'秘密保持契約書',pic:'堀田正人',signed:'2025-05-28',start:'2025-05-28',end:'2027-05-27',autocheck:'n/a',renewdate:'',status:'継続中',cloudsign:'',renewcount:'',memo:''},
+  {sheet:'NDA',num:'H-N-039',company:'スパークス・アセット・マネジメント株式会社',docname:'機密保持契約書',pic:'堀田正人',signed:'2025-05-27',start:'2025-05-27',end:'2027-05-26',autocheck:'n/a',renewdate:'',status:'継続中',cloudsign:'◯',renewcount:'',memo:''},
+  {sheet:'NDA',num:'H-N-040',company:'いわぎん事業創造キャピタル株式会社',docname:'秘密保持契約書',pic:'堀田正人',signed:'2025-05-30',start:'2025-05-30',end:'2028-05-29',autocheck:'n/a',renewdate:'',status:'継続中',cloudsign:'◯',renewcount:'',memo:'投資完了後36ヶ月'},
+  {sheet:'NDA',num:'H-N-041',company:'株式会社ケップルグループ',docname:'秘密保持契約書',pic:'堀田正人',signed:'2025-05-30',start:'2025-05-30',end:'2027-05-29',autocheck:'n/a',renewdate:'',status:'継続中',cloudsign:'◯',renewcount:'',memo:''},
+  {sheet:'NDA',num:'H-N-042',company:'合同会社DMM.com',docname:'秘密保持契約書',pic:'中村',signed:'2025-06-13',start:'2025-06-16',end:'2026-06-15',autocheck:'',renewdate:'',status:'継続中',cloudsign:'',renewcount:'',memo:''},
+  {sheet:'NDA',num:'N-N-011',company:'株式会社Oceanic Constellations',docname:'秘密保持契約書',pic:'永澤',signed:'2025-07-01',start:'2025-07-01',end:'2028-06-30',autocheck:'',renewdate:'',status:'継続中',cloudsign:'',renewcount:'',memo:''},
+  {sheet:'NDA',num:'H-N-045',company:'ベータ・ベンチャーキャピタル株式会社',docname:'秘密保持契約書',pic:'堀田正人',signed:'2025-07-09',start:'2025-07-09',end:'2026-07-08',autocheck:'',renewdate:'',status:'継続中',cloudsign:'',renewcount:'',memo:''},
+  {sheet:'NDA',num:'H-N-046',company:'株式会社ゼンリンフューチャーパートナーズ',docname:'秘密保持契約書',pic:'堀田正人',signed:'2025-07-23',start:'2025-07-23',end:'2026-07-22',autocheck:'',renewdate:'',status:'継続中',cloudsign:'',renewcount:'',memo:''},
+  {sheet:'NDA',num:'H-N-047',company:'株式会社プラザホールディングス',docname:'秘密保持契約書（双方開示）',pic:'堀田正人',signed:'2025-08-01',start:'2025-08-01',end:'2026-07-31',autocheck:'1',renewdate:'2026-06-30',status:'継続中',cloudsign:'',renewcount:'',memo:''},
+  {sheet:'NDA',num:'I-N-015',company:'シャネル合同会社',docname:'秘密保持契約書',pic:'増田幸司',signed:'2025-09-17',start:'2025-09-17',end:'2026-09-16',autocheck:'1',renewdate:'2026-08-16',status:'継続中',cloudsign:'',renewcount:'',memo:''},
+  {sheet:'NDA',num:'N-N-012',company:'平和不動産株式会社',docname:'秘密保持契約書に関する念書',pic:'岸本',signed:'2025-10-06',start:'2025-10-06',end:'2026-10-05',autocheck:'',renewdate:'',status:'継続中',cloudsign:'',renewcount:'',memo:''},
+  {sheet:'NDA',num:'H-N-048',company:'株式会社サカイ引越センター',docname:'秘密保持契約書',pic:'堀田正人',signed:'2025-10-08',start:'2025-10-08',end:'2026-10-07',autocheck:'3',renewdate:'2026-07-07',status:'継続中',cloudsign:'',renewcount:'',memo:''},
+  {sheet:'NDA',num:'H-N-050',company:'SALESCORE株式会社',docname:'秘密保持契約書',pic:'池田',signed:'2025-10-27',start:'2025-10-27',end:'2028-10-26',autocheck:'1',renewdate:'2028-09-26',status:'継続中',cloudsign:'',renewcount:'',memo:''},
+  {sheet:'NDA',num:'H-N-051',company:'株式会社博報堂ＤＹベンチャーズ',docname:'秘密保持契約書',pic:'堀田',signed:'2025-10-30',start:'2025-10-30',end:'2026-10-29',autocheck:'',renewdate:'',status:'継続中',cloudsign:'',renewcount:'',memo:''},
+  {sheet:'NDA',num:'N-N-014',company:'セーフィー株式会社',docname:'秘密保持契約書',pic:'竹内',signed:'2025-11-07',start:'2025-11-05',end:'2026-11-04',autocheck:'',renewdate:'',status:'継続中',cloudsign:'',renewcount:'',memo:''},
+  {sheet:'NDA',num:'N-N-015',company:'株式会社NEWS',docname:'秘密保持契約書',pic:'出石',signed:'2025-11-10',start:'2025-11-10',end:'2026-11-09',autocheck:'1',renewdate:'2026-10-09',status:'継続中',cloudsign:'',renewcount:'',memo:''},
+  {sheet:'NDA',num:'H-N-052',company:'株式会社NTTデータ イントラマート',docname:'秘密保持契約書',pic:'石田',signed:'2025-12-19',start:'2025-12-19',end:'2026-12-19',autocheck:'',renewdate:'2026-12-04',status:'継続中',cloudsign:'',renewcount:'',memo:''},
+  {sheet:'NDA',num:'H-N-053',company:'株式会社すむたす',docname:'秘義務契約書',pic:'関口',signed:'2026-01-16',start:'2026-01-16',end:'2029-01-15',autocheck:'',renewdate:'',status:'継続中',cloudsign:'',renewcount:'',memo:''},
+  {sheet:'NDA',num:'N-N-017',company:'乃村工藝社',docname:'秘密保持関する誓約書',pic:'大森',signed:'2026-01-28',start:'2026-01-28',end:'2027-01-27',autocheck:'1',renewdate:'2026-12-27',status:'継続中',cloudsign:'',renewcount:'',memo:''},
+  {sheet:'NDA',num:'H-N-055',company:'日本郵政キャピタル株式会社',docname:'秘密保持等に関する契約書',pic:'',signed:'2026-04-03',start:'2026-04-03',end:'2028-04-02',autocheck:'',renewdate:'',status:'継続中',cloudsign:'',renewcount:'',memo:''},
+  {sheet:'NDA',num:'H-N-056',company:'東海東京インベストメント株式会社',docname:'秘密保持契約書',pic:'堀田',signed:'2026-04-15',start:'2026-04-15',end:'2027-04-14',autocheck:'',renewdate:'',status:'継続中',cloudsign:'',renewcount:'',memo:''},
+  {sheet:'NDA',num:'N-N-018',company:'株式会社コスモスイニシア',docname:'秘密保持に関する覚書',pic:'永澤',signed:'2026-05-08',start:'2026-05-08',end:'2027-05-07',autocheck:'3',renewdate:'2027-02-07',status:'継続中',cloudsign:'',renewcount:'',memo:''},
+  {sheet:'NDA',num:'H-N-057',company:'株式会社Photosynth',docname:'秘密保持契約書',pic:'堀田',signed:'2026-05-15',start:'2026-05-15',end:'2027-05-14',autocheck:'',renewdate:'',status:'継続中',cloudsign:'',renewcount:'',memo:''},
+  {sheet:'NDA',num:'H-N-058',company:'SGインキュベート株式会社',docname:'秘密保持契約書',pic:'堀田',signed:'2026-05-22',start:'2026-05-22',end:'2027-05-31',autocheck:'',renewdate:'',status:'継続中',cloudsign:'',renewcount:'',memo:''},
+  {sheet:'賃貸借',num:'C-014',company:'株式会社光泉インダストリー',docname:'貸室賃貸借契約書（北海道日伊文化会館）',pic:'傍島啓記',signed:'2024-06-14',start:'2024-07-20',end:'2027-07-19',autocheck:'6ヶ月',renewdate:'2027-01-19',status:'継続中',cloudsign:'',renewcount:'',memo:''},
+  {sheet:'賃貸借',num:'C-008-1',company:'株式会社ファンズ',docname:'内装造作等譲渡契約書（淀屋橋北浜センタービル）',pic:'傍島啓記',signed:'2026-01-31',start:'2026-01-31',end:'',autocheck:'n/a',renewdate:'',status:'継続中',cloudsign:'',renewcount:'',memo:''},
+  {sheet:'賃貸借',num:'H-C-025',company:'下簗一博',docname:'住宅賃貸借契約書（ブライズ雪谷大塚）',pic:'長谷川彩子',signed:'2025-04-10',start:'2025-04-30',end:'2027-04-29',autocheck:'1ヶ月',renewdate:'2027-03-01',status:'継続中',cloudsign:'',renewcount:'',memo:''},
+  {sheet:'賃貸借',num:'INC-C-026',company:'株式会社イワキプランニング',docname:'建物賃貸借契約書（花畑）',pic:'倉内薫',signed:'2025-12-20',start:'2026-01-01',end:'2028-12-31',autocheck:'4ヶ月',renewdate:'2028-09-30',status:'継続中',cloudsign:'',renewcount:'',memo:'東京都足立区花畑4-2-15'},
+  {sheet:'賃貸借',num:'INC-C-030',company:'長尾トモ子・英樹',docname:'事業用賃貸契約書（板橋倉庫）',pic:'',signed:'2024-02-29',start:'2024-03-01',end:'2027-02-28',autocheck:'',renewdate:'',status:'継続中',cloudsign:'',renewcount:'',memo:'東京都板橋区前野町2-30-24'},
+  {sheet:'賃貸借',num:'CO-C-032',company:'三菱UFJ信託銀行株式会社',docname:'建物賃貸借契約書（DPスクエア本町）',pic:'',signed:'',start:'2026-02-01',end:'2028-05-31',autocheck:'',renewdate:'',status:'継続中',cloudsign:'',renewcount:'',memo:'大阪市中央区南木4-1-10'},
+  {sheet:'投資契約',num:'H-I-001',company:'ニッセイ・キャピタル株式会社',docname:'投資契約書',pic:'仙石宗之',signed:'2016-07-29',start:'2016-07-29',end:'',autocheck:'',renewdate:'',status:'継続中',cloudsign:'-',renewcount:'0',memo:'42,858株＠3500円'},
+  {sheet:'投資契約',num:'H-I-002',company:'SMBCベンチャーキャピタル株式会社',docname:'投資契約書',pic:'仙石宗之',signed:'2016-07-29',start:'2016-07-29',end:'',autocheck:'',renewdate:'',status:'継続中',cloudsign:'-',renewcount:'0',memo:'5,714株＠3500円'},
+  {sheet:'投資契約',num:'H-I-003',company:'みずほキャピタル株式会社',docname:'投資契約書',pic:'仙石宗之',signed:'2016-07-29',start:'2016-07-29',end:'',autocheck:'',renewdate:'',status:'継続中',cloudsign:'-',renewcount:'0',memo:'5,714株＠3500円'},
+  {sheet:'投資契約',num:'H-I-004',company:'りそなキャピタル株式会社',docname:'投資契約書',pic:'仙石宗之',signed:'2016-07-29',start:'2016-07-29',end:'',autocheck:'',renewdate:'',status:'継続中',cloudsign:'-',renewcount:'0',memo:'5,714株＠3500円'},
+  {sheet:'投資契約',num:'H-I-005',company:'ニッセイ・キャピタル株式会社',docname:'投資契約書',pic:'仙石宗之',signed:'2016-07-29',start:'2016-07-29',end:'',autocheck:'',renewdate:'',status:'継続中',cloudsign:'-',renewcount:'0',memo:'42,858株＠3500円'},
+];
+
+// ============================================================
+// アプリロジック
+// ============================================================
+const today = new Date(); today.setHours(0,0,0,0);
+function daysDiff(s){if(!s)return 9999;const d=new Date(s);if(isNaN(d))return 9999;d.setHours(0,0,0,0);return Math.round((d-today)/86400000);}
+function fmt(s){if(!s)return'-';const d=new Date(s);if(isNaN(d))return s;return d.getFullYear()+'/'+(d.getMonth()+1).toString().padStart(2,'0')+'/'+d.getDate().toString().padStart(2,'0');}
+function getStatus(c){
+  if(c.status&&c.status!==''&&c.status!=='#VALUE!')return c.status;
+  const d=daysDiff(c.end);if(d===9999)return'不明';
+  if(d<0)return'期限切れ';if(d<=90)return'要確認';return'継続中';
+}
+function statusCls(s){
+  if(s==='継続中')return'badge-success';if(s==='期限切れ')return'badge-danger';
+  if(s==='要確認')return'badge-warning';if(s==='終了')return'badge-gray';return'badge-info';
+}
+
+let contracts=RAW_DATA.map((r,i)=>({...r,id:i+1}));
+let nextId=contracts.length+1,editId=null,detailId=null,currentSheet='すべて',currentPage=1;
+const PER_PAGE=30;
+const SHEETS=['すべて',...[...new Set(RAW_DATA.map(r=>r.sheet))]];
+
+function renderMetrics(){
+  const total=contracts.length,active=contracts.filter(c=>getStatus(c)==='継続中').length;
+  const warn=contracts.filter(c=>{const d=daysDiff(c.end);return d>=0&&d<=90;}).length;
+  const expired=contracts.filter(c=>getStatus(c)==='期限切れ').length;
+  document.getElementById('metrics').innerHTML=`
+    <div class="metric"><div class="metric-label">総契約数</div><div class="metric-value">${total}</div></div>
+    <div class="metric"><div class="metric-label">継続中</div><div class="metric-value success">${active}</div></div>
+    <div class="metric"><div class="metric-label">90日以内に満了</div><div class="metric-value warning">${warn}</div></div>
+    <div class="metric"><div class="metric-label">期限切れ</div><div class="metric-value danger">${expired}</div></div>`;
+}
+function renderAlerts(){
+  const urgent=contracts.map(c=>({...c,d:daysDiff(c.end)})).filter(c=>c.d>=0&&c.d<=90).sort((a,b)=>a.d-b.d).slice(0,10);
+  const el=document.getElementById('alerts');
+  if(!urgent.length){el.innerHTML='<p style="font-size:12px;color:#6b7280;padding:6px 0">期限が近い契約はありません</p>';return;}
+  el.innerHTML=urgent.map(c=>`<div class="alert-item">
+    <span class="badge ${c.d<=30?'badge-danger':'badge-warning'}">${c.d}日後</span>
+    <div style="flex:1;min-width:0">
+      <div style="font-size:12px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${c.company}</div>
+      <div style="font-size:11px;color:#6b7280">${c.num} ・ ${fmt(c.end)}</div>
+    </div></div>`).join('');
+}
+function renderActiveList(){
+  const list=contracts.filter(c=>getStatus(c)==='継続中'&&!c.end).slice(0,8);
+  const el=document.getElementById('active-list');
+  el.innerHTML=list.map(c=>`<div class="alert-item">
+    <span class="badge badge-success">継続中</span>
+    <div style="flex:1;min-width:0">
+      <div style="font-size:12px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${c.company}</div>
+      <div style="font-size:11px;color:#6b7280">${c.num} ・ ${c.sheet}</div>
+    </div></div>`).join('')||'<p style="font-size:12px;color:#6b7280;padding:6px 0">該当なし</p>';
+}
+function renderSheetStats(){
+  const counts={};contracts.forEach(c=>{counts[c.sheet]=(counts[c.sheet]||0)+1;});
+  document.getElementById('sheet-stats').innerHTML=Object.entries(counts).map(([s,n])=>`
+    <div style="background:#f5f5f5;border-radius:6px;padding:6px 12px;font-size:12px;display:flex;gap:8px;align-items:center">
+      <span style="color:#6b7280">${s}</span><span style="font-weight:500">${n}件</span>
+    </div>`).join('');
+}
+function renderSheetTabs(){
+  document.getElementById('sheet-tabs').innerHTML=SHEETS.map(s=>`
+    <button class="sheet-tab ${s===currentSheet?'active':''}" onclick="setSheet('${s}')">${s}</button>`).join('');
+}
+function setSheet(s){currentSheet=s;currentPage=1;renderTable();}
+function getFiltered(){
+  const q=(document.getElementById('search').value||'').toLowerCase();
+  const fs=document.getElementById('filter-status').value;
+  return contracts.filter(c=>{
+    const mQ=!q||c.company.toLowerCase().includes(q)||c.docname.toLowerCase().includes(q)||(c.pic||'').toLowerCase().includes(q)||c.num.toLowerCase().includes(q);
+    const mS=!fs||getStatus(c)===fs;
+    const mSheet=currentSheet==='すべて'||c.sheet===currentSheet;
+    return mQ&&mS&&mSheet;
+  });
+}
+function renderTable(){
+  renderSheetTabs();
+  const filtered=getFiltered(),total=filtered.length,pages=Math.ceil(total/PER_PAGE)||1;
+  if(currentPage>pages)currentPage=1;
+  const slice=filtered.slice((currentPage-1)*PER_PAGE,currentPage*PER_PAGE);
+  document.getElementById('result-count').textContent=`${total}件中 ${Math.min((currentPage-1)*PER_PAGE+1,total)}〜${Math.min(currentPage*PER_PAGE,total)}件を表示`;
+  document.getElementById('table-body').innerHTML=slice.map(c=>{
+    const st=getStatus(c),d=daysDiff(c.end);
+    return`<tr onclick="showDetail(${c.id})">
+      <td title="${c.num}">${c.num}</td><td title="${c.company}">${c.company}</td>
+      <td title="${c.docname}">${c.docname}</td><td title="${c.pic||''}">${c.pic||'-'}</td>
+      <td><div>${fmt(c.end)}</div><div class="days-left">${d===9999?'':d<0?Math.abs(d)+'日超過':d+'日後'}</div></td>
+      <td><span class="badge badge-gray" style="font-size:10px">${c.sheet}</span></td>
+      <td><span class="badge ${statusCls(st)}">${st}</span></td>
+      <td><button class="action-btn" onclick="event.stopPropagation();openEditModal(${c.id})" aria-label="編集"><i class="ti ti-edit"></i></button></td>
+    </tr>`;
+  }).join('')||'<tr><td colspan="8" style="text-align:center;color:#6b7280;padding:1.5rem;font-size:12px">該当なし</td></tr>';
+  let pag='';
+  if(pages>1){
+    pag+=`<span>全${pages}ページ</span>`;
+    if(currentPage>1)pag+=`<button class="btn btn-outline" onclick="gotoPage(${currentPage-1})">前へ</button>`;
+    pag+=`<span>${currentPage}/${pages}</span>`;
+    if(currentPage<pages)pag+=`<button class="btn btn-outline" onclick="gotoPage(${currentPage+1})">次へ</button>`;
+  }
+  document.getElementById('pagination').innerHTML=pag;
+}
+function gotoPage(p){currentPage=p;renderTable();}
+function showDetail(id){
+  const c=contracts.find(x=>x.id===id);if(!c)return;
+  detailId=id;
+  document.getElementById('detail-title').textContent=c.company;
+  const rows=[['契約番号',c.num],['シート',c.sheet],['契約書名',c.docname],['担当者',c.pic||'-'],
+    ['契約締結日',fmt(c.signed)],['契約開始日',fmt(c.start)],['契約満了日',fmt(c.end)],
+    ['自動更新確認時期',c.autocheck||'-'],['契約更新期日',fmt(c.renewdate)],
+    ['ステータス',getStatus(c)],['クラウドサイン',c.cloudsign||'-'],['更新回数',c.renewcount||'-'],['備考',c.memo||'-']];
+  document.getElementById('detail-body').innerHTML=rows.map(([l,v])=>`
+    <div class="detail-row"><div class="detail-label">${l}</div><div class="detail-value">${v}</div></div>`).join('');
+  document.getElementById('detail-modal').classList.add('open');
+}
+function closeDetail(){document.getElementById('detail-modal').classList.remove('open');}
+function editFromDetail(){closeDetail();openEditModal(detailId);}
+function openEditModal(id){
+  editId=id;const c=contracts.find(x=>x.id===id);
+  document.getElementById('edit-modal-title').textContent='契約を編集';
+  document.getElementById('e-company').value=c.company;document.getElementById('e-docname').value=c.docname;
+  document.getElementById('e-num').value=c.num;document.getElementById('e-pic').value=c.pic||'';
+  document.getElementById('e-signed').value=c.signed||'';document.getElementById('e-start').value=c.start||'';
+  document.getElementById('e-end').value=c.end||'';document.getElementById('e-autocheck').value=c.autocheck||'';
+  document.getElementById('e-renewdate').value=c.renewdate||'';document.getElementById('e-status').value=c.status||'';
+  document.getElementById('e-cloudsign').value=c.cloudsign||'';document.getElementById('e-renewcount').value=c.renewcount||'';
+  document.getElementById('e-memo').value=c.memo||'';
+  document.getElementById('edit-modal').classList.add('open');
+}
+function openAddModal(){
+  editId=null;document.getElementById('edit-modal-title').textContent='契約を追加';
+  ['e-company','e-docname','e-num','e-pic','e-signed','e-start','e-end','e-autocheck','e-renewdate','e-cloudsign','e-renewcount','e-memo'].forEach(i=>document.getElementById(i).value='');
+  document.getElementById('e-status').value='';
+  document.getElementById('edit-modal').classList.add('open');
+}
+function closeEdit(){document.getElementById('edit-modal').classList.remove('open');}
+function saveEdit(){
+  const data={company:document.getElementById('e-company').value.trim(),docname:document.getElementById('e-docname').value.trim(),
+    num:document.getElementById('e-num').value.trim(),pic:document.getElementById('e-pic').value.trim(),
+    signed:document.getElementById('e-signed').value,start:document.getElementById('e-start').value,
+    end:document.getElementById('e-end').value,autocheck:document.getElementById('e-autocheck').value.trim(),
+    renewdate:document.getElementById('e-renewdate').value,status:document.getElementById('e-status').value,
+    cloudsign:document.getElementById('e-cloudsign').value.trim(),renewcount:document.getElementById('e-renewcount').value,
+    memo:document.getElementById('e-memo').value};
+  if(!data.company){alert('会社名は必須です');return;}
+  if(editId){const i=contracts.findIndex(c=>c.id===editId);contracts[i]={...contracts[i],...data};}
+  else contracts.push({id:nextId++,sheet:'手動追加',...data});
+  closeEdit();renderAll();renderTable();
+}
+[document.getElementById('detail-modal'),document.getElementById('edit-modal')].forEach(m=>{
+  m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('open');});
+});
+function switchTab(id){
+  document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active',['dashboard','contracts'][i]===id));
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  if(id==='contracts'){renderSheetTabs();renderTable();}
+}
+function renderAll(){renderMetrics();renderAlerts();renderActiveList();renderSheetStats();}
+renderAll();
+</script>
+</body>
+</html>
